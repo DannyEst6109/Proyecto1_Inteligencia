@@ -1,0 +1,98 @@
+import time
+import pandas as pd
+import matplotlib.pyplot as plt
+import matplotlib.patches as patches
+
+# Función para realizar DFS
+def dfs(graph, start, goal):
+    visited = set()
+    stack = [(start, [start])]
+
+    iteration = 1
+
+    while stack:
+        current, path = stack.pop()
+
+        if current == goal:
+            return path, iteration
+
+        if current not in visited:
+            visited.add(current)
+
+            i, j = current
+            neighbors = []
+
+            # Obtener vecinos válidos
+            if i > 0 and graph[i - 1][j] == '1':
+                neighbors.append((i - 1, j))
+            if i < len(graph) - 1 and graph[i + 1][j] == '1':
+                neighbors.append((i + 1, j))
+            if j > 0 and graph[i][j - 1] == '1':
+                neighbors.append((i, j - 1))
+            if j < len(graph[0]) - 1 and graph[i][j + 1] == '1':
+                neighbors.append((i, j + 1))
+
+            for neighbor in reversed(neighbors):
+                if neighbor not in visited:
+                    stack.append((neighbor, path + [neighbor]))
+
+        iteration += 1
+
+    return None, iteration
+
+# Función para cargar el laberinto desde un archivo de texto
+def load_labyrinth(file_path):
+    with open(file_path, 'r') as file:
+        labyrinth = [list(line.strip()) for line in file.readlines()]
+    return labyrinth
+
+# Visualización del laberinto y el camino
+def visualize_labyrinth(labyrinth, path):
+    fig, ax = plt.subplots()
+
+    for i in range(len(labyrinth)):
+        for j in range(len(labyrinth[0])):
+            cell = labyrinth[i][j]
+            color = 'white' if cell == '1' else 'black' if cell == '0' else 'green' if cell == '2' else 'red' if cell == '3' else 'white'
+            rect = patches.Rectangle((j, -i), 1, 1, linewidth=1, edgecolor='black', facecolor=color)
+            ax.add_patch(rect)
+
+    if path:
+        path_x, path_y = zip(*path)
+        ax.plot(path_y, [-x for x in path_x], marker='o', color='blue')
+
+    ax.set_xlim(0, len(labyrinth[0]))
+    ax.set_ylim(-len(labyrinth), 0)
+    ax.set_aspect('equal', adjustable='box')
+    plt.show()
+
+# Cargar laberinto desde el archivo
+laberinto_path = 'Prueba_3.txt'
+laberinto = load_labyrinth(laberinto_path)
+
+# Encontrar la entrada y salida del laberinto
+for i in range(len(laberinto)):
+    for j in range(len(laberinto[0])):
+        if laberinto[i][j] == '2':
+            start_node = (i, j)
+        elif laberinto[i][j] == '3':
+            goal_node = (i, j)
+
+# Ejecutar DFS
+start_time = time.time()
+path, iterations = dfs(laberinto, start_node, goal_node)
+end_time = time.time()
+
+# Imprimir resultados
+if path:
+    print("El laberinto fue resuelto.")
+    print(f"Camino encontrado: {path}")
+    print(f"Número total de iteraciones: {iterations}")
+    print(f"Tiempo total de ejecución: {end_time - start_time} segundos")
+else:
+    print("No se encontró un camino válido para resolver el laberinto.")
+    print(f"Número total de iteraciones: {iterations}")
+    print(f"Tiempo total de ejecución: {end_time - start_time} segundos")
+
+# Visualización del laberinto y el camino
+visualize_labyrinth(laberinto, path)
